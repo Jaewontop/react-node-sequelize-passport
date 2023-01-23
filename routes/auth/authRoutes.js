@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const db = require("../../models");
 const localPassport = require("../../passport/local");
+const googlePassport = require("../../passport/google");
 
 router.post("/login", localPassport.authenticate("local"), (req, res) => {
   console.log(req);
@@ -25,6 +26,26 @@ router.post("/signup", (req, res) => {
       res.json(err);
     });
 });
+
+router.get("/user/google", function (req, res, next) {
+  // GET /user/google
+  console.log("[DEBUG]: get/ user/google");
+  googlePassport.authenticate("google", { scope: ["profile", "email"] })(
+    req,
+    res,
+    next
+  );
+});
+
+router.get(
+  "/user/google/callback",
+  googlePassport.authenticate("google", {
+    failureRedirect: "/",
+  }),
+  async (req, res, next) => {
+    return res.status(200).redirect(frontUrl);
+  }
+);
 
 // Route for logging user out
 router.get("/logout", (req, res) => {
